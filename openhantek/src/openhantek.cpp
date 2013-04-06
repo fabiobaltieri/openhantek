@@ -44,6 +44,7 @@
 #include "dsowidget.h"
 #include "settings.h"
 #include "hantek/control.h"
+#include "hardcontrol.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -91,7 +92,10 @@ OpenHantekMainWindow::OpenHantekMainWindow(QWidget *parent, Qt::WindowFlags flag
 	// Update stored window size and position
 	this->settings->options.window.position = this->pos();
 	this->settings->options.window.size = this->size();
-	
+
+	// Create hard control instance
+	this->hardControl = new HardControl(this->settings);
+
 	// Connect all signals
 	this->connectSignals();
 	

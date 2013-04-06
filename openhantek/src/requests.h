@@ -1,0 +1,99 @@
+/* data structures */
+
+/* events */
+enum {
+	PANEL_NONE = 0,
+
+	/* switches */
+
+	PANEL_SW_R_RUN_STOP,
+	PANEL_SW_R_MODE,
+	PANEL_SW_R_DEFAULT,
+
+	PANEL_SW_H_TIMEBASE,
+	PANEL_SW_H_DELAY,
+
+	PANEL_SW_C_POSITION,
+	PANEL_SW_C_MODE,
+
+	PANEL_SW_T_EDGE,
+	PANEL_SW_T_SOURCE,
+	PANEL_SW_T_MANUAL,
+	PANEL_SW_T_POSITION,
+
+	PANEL_SW_CH1_ENABLE,
+	PANEL_SW_CH1_SCALE,
+	PANEL_SW_CH1_OFFSET,
+
+	PANEL_SW_CH2_ENABLE,
+	PANEL_SW_CH2_SCALE,
+	PANEL_SW_CH2_OFFSET,
+
+	/* encoders */
+
+	PANEL_ENC_H_TIMEBASE,
+	PANEL_ENC_H_DELAY,
+
+	PANEL_ENC_C_POSITION,
+
+	PANEL_ENC_T_POSITION,
+
+	PANEL_ENC_CH1_SCALE,
+	PANEL_ENC_CH1_OFFSET,
+
+	PANEL_ENC_CH2_SCALE,
+	PANEL_ENC_CH2_OFFSET,
+
+	PANEL_COUNT,
+};
+
+#define PANEL_FIRST_ENC PANEL_ENC_H_TIMEBASE
+
+struct panel_event {
+	uint8_t type;
+	int8_t value;
+};
+
+struct panel_data {
+	struct panel_event event[4];
+};
+
+/* LEDs */
+enum {
+	LED_STATUS	= 0,
+
+	LED_R_RUN	= 1,
+	LED_R_STOP	= 2,
+	LED_R_AUTO	= 3,
+	LED_R_NORMAL	= 4,
+	LED_R_SINGLE	= 5,
+
+	LED_T_RISING	= 6,
+	LED_T_FALLING	= 7,
+
+	LED_CH1_ON	= 8,
+	LED_CH1_TRIG	= 9,
+	LED_CH1_AC	= 10,
+	LED_CH1_50OHM	= 11,
+
+	LED_CH2_ON	= 12,
+	LED_CH2_TRIG	= 13,
+	LED_CH2_AC	= 14,
+	LED_CH2_50OHM	= 15,
+};
+
+#define LED_RUN		(1 << LED_R_RUN | 1 << LED_R_STOP)
+#define LED_MODE	(1 << LED_R_AUTO | \
+			 1 << LED_R_NORMAL | 1 << LED_R_SINGLE)
+#define LED_TRIGGER	(1 << LED_T_RISING | 1 << LED_T_FALLING)
+#define LED_CH1		(1 << LED_CH1_ON | 1 << LED_CH1_TRIG | \
+			 1 << LED_CH1_AC | 1 << LED_CH1_50OHM)
+#define LED_CH2		(1 << LED_CH2_ON | 1 << LED_CH2_TRIG | \
+			 1 << LED_CH2_AC | 1 << LED_CH2_50OHM)
+#define LED_ALL		(1 << LED_STATUS | \
+			 LED_RUN | LED_MODE | LED_TRIGGER | LED_CH1 | LED_CH2)
+
+/* requests */
+
+#define CUSTOM_RQ_SET_LED	0x01
+#define CUSTOM_RQ_RESET		0xff

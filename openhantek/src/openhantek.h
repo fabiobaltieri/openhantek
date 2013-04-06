@@ -41,6 +41,7 @@ class HorizontalDock;
 class TriggerDock;
 class SpectrumDock;
 class VoltageDock;
+class HardControl;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -119,6 +120,7 @@ class OpenHantekMainWindow : public QMainWindow {
 		// Data handling classes
 		DataAnalyzer *dataAnalyzer;
 		DsoControl *dsoControl;
+		HardControl *hardControl;
 		
 		// Other variables
 		QString currentFile;

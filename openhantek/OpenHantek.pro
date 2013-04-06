@@ -38,6 +38,7 @@ SOURCES += \
 	src/openhantek.cpp \
 	src/settings.cpp \
 	src/sispinbox.cpp \
+	src/hardcontrol.cpp \
 	src/hantek/control.cpp \
 	src/hantek/device.cpp \
 	src/hantek/types.cpp
@@ -58,6 +59,7 @@ HEADERS += \
 	src/openhantek.h \
 	src/settings.h \
 	src/sispinbox.h \
+	src/hardcontrol.h \
 	src/hantek/control.h \
 	src/hantek/device.h \
 	src/hantek/types.h

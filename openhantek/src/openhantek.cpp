@@ -103,6 +103,8 @@ OpenHantekMainWindow::OpenHantekMainWindow(QWidget *parent, Qt::WindowFlags flag
 	this->dsoControl->connectDevice();
 	this->initializeDevice();
 	this->dsoControl->startSampling();
+
+	this->hardControl->updateLEDs();
 }
 
 /// \brief Cleans up the main window.
@@ -291,17 +293,22 @@ void OpenHantekMainWindow::connectSignals() {
 	
 	connect(this->triggerDock, SIGNAL(modeChanged(Dso::TriggerMode)), this->dsoControl, SLOT(setTriggerMode(Dso::TriggerMode)));
 	connect(this->triggerDock, SIGNAL(modeChanged(Dso::TriggerMode)), this->dsoWidget, SLOT(updateTriggerMode()));
+	connect(this->triggerDock, SIGNAL(modeChanged(Dso::TriggerMode)), this->hardControl, SLOT(updateLEDs()));
 	connect(this->triggerDock, SIGNAL(sourceChanged(bool, unsigned int)), this->dsoControl, SLOT(setTriggerSource(bool, unsigned int)));
 	connect(this->triggerDock, SIGNAL(sourceChanged(bool, unsigned int)), this->dsoWidget, SLOT(updateTriggerSource()));
+	connect(this->triggerDock, SIGNAL(sourceChanged(bool, unsigned int)), this->hardControl, SLOT(updateLEDs()));
 	connect(this->triggerDock, SIGNAL(slopeChanged(Dso::Slope)), this->dsoControl, SLOT(setTriggerSlope(Dso::Slope)));
 	connect(this->triggerDock, SIGNAL(slopeChanged(Dso::Slope)), this->dsoWidget, SLOT(updateTriggerSlope()));
+	connect(this->triggerDock, SIGNAL(slopeChanged(Dso::Slope)), this->hardControl, SLOT(updateLEDs()));
 	connect(this->dsoWidget, SIGNAL(triggerPositionChanged(double)), this->dsoControl, SLOT(setPretriggerPosition(double)));
 	connect(this->dsoWidget, SIGNAL(triggerLevelChanged(unsigned int, double)), this->dsoControl, SLOT(setTriggerLevel(unsigned int, double)));
 	
 	connect(this->voltageDock, SIGNAL(usedChanged(unsigned int, bool)), this, SLOT(updateUsed(unsigned int)));
 	connect(this->voltageDock, SIGNAL(usedChanged(unsigned int, bool)), this->dsoWidget, SLOT(updateVoltageUsed(unsigned int, bool)));
+	connect(this->voltageDock, SIGNAL(usedChanged(unsigned int, bool)), this->hardControl, SLOT(updateLEDs()));
 	connect(this->voltageDock, SIGNAL(couplingChanged(unsigned int, Dso::Coupling)), this->dsoControl, SLOT(setCoupling(unsigned int, Dso::Coupling)));
 	connect(this->voltageDock, SIGNAL(couplingChanged(unsigned int, Dso::Coupling)), this->dsoWidget, SLOT(updateVoltageCoupling(unsigned int)));
+	connect(this->voltageDock, SIGNAL(couplingChanged(unsigned int, Dso::Coupling)), this->hardControl, SLOT(updateLEDs()));
 	connect(this->voltageDock, SIGNAL(modeChanged(Dso::MathMode)), this->dsoWidget, SLOT(updateMathMode()));
 	connect(this->voltageDock, SIGNAL(gainChanged(unsigned int, double)), this, SLOT(updateVoltageGain(unsigned int)));
 	connect(this->voltageDock, SIGNAL(gainChanged(unsigned int, double)), this->dsoWidget, SLOT(updateVoltageGain(unsigned int)));
@@ -313,7 +320,9 @@ void OpenHantekMainWindow::connectSignals() {
 	
 	// Started/stopped signals from oscilloscope	
 	connect(this->dsoControl, SIGNAL(samplingStarted()), this, SLOT(started()));
+	connect(this->dsoControl, SIGNAL(samplingStarted()), this->hardControl, SLOT(started()));
 	connect(this->dsoControl, SIGNAL(samplingStopped()), this, SLOT(stopped()));
+	connect(this->dsoControl, SIGNAL(samplingStopped()), this->hardControl, SLOT(stopped()));
 	
 	//connect(this->dsoControl, SIGNAL(recordLengthChanged(unsigned long)), this, SLOT(recordLengthChanged()));
 	connect(this->dsoControl, SIGNAL(recordTimeChanged(double)), this, SLOT(recordTimeChanged(double)));

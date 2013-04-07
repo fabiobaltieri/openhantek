@@ -102,6 +102,13 @@ void SiSpinBox::stepBy(int steps) {
 	double stepsSpan = this->steps.last() / this->steps.first();
 	int stepsCount = this->steps.size() - 1;
 	double value = 0;
+
+	// Skip if we are already at a limit or if steps is null
+	if (steps == 0 ||
+	    (steps < 0 && this->value() <= this->minimum()) ||
+	    (steps > 0 && this->value() >= this->maximum())) {
+		return;
+	}
 	
 	if(!this->steppedTo) { // No step done directly before this one, so we need to check where we are
 		// Get how often the steps have to be fully ran through

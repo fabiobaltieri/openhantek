@@ -29,6 +29,7 @@
 
 #include <QWidget>
 
+#include "hantek/types.h"
 #include "dockwindows.h"
 #include "glscope.h"
 #include "levelslider.h"
@@ -92,6 +93,14 @@ class DsoWidget : public QWidget {
 		DsoSettings *settings; ///< The settings provided by the main window
 		
 		DataAnalyzer *dataAnalyzer; ///< The data source provided by the main window
+
+		// Hard Events saved values
+		int active_marker;
+		double old_trigger_position;
+		double old_vertical_offset[HANTEK_CHANNELS];
+		double old_vertical_trigger[HANTEK_CHANNELS];
+		QTime zero_lock[HANTEK_CHANNELS + 2]; // two channels + trigger + horizontal
+		QTime last_scroll[HANTEK_CHANNELS + 3]; // as above + cursor
 	
 	public slots:
 		// Horizontal axis
@@ -128,6 +137,9 @@ class DsoWidget : public QWidget {
 		// Data analyzer
 		void dataAnalyzed();
 	
+		// Hard Events
+		void hard_event(int type, int value);
+
 	protected slots:
 		// Sliders
 		void updateOffset(int channel, double value);

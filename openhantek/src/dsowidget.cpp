@@ -26,6 +26,7 @@
 
 #include <QGridLayout>
 #include <QTimer>
+#include <QTime>
 
 
 #include "dsowidget.h"
@@ -37,6 +38,7 @@
 #include "helper.h"
 #include "levelslider.h"
 #include "settings.h"
+#include "requests.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -63,6 +65,14 @@ DsoWidget::DsoWidget(DsoSettings *settings, DataAnalyzer *dataAnalyzer, QWidget 
 	this->zoomScope = new GlScope(this->settings);
 	this->zoomScope->setGenerator(this->generator);
 	this->zoomScope->setZoomMode(true);
+
+	// Hard Control saved defaults
+	this->active_marker = 0;
+	this->old_trigger_position = this->settings->scope.trigger.position;
+	for (int i = 0; i < HANTEK_CHANNELS; i++) {
+		this->old_vertical_offset[i] = this->settings->scope.voltage[i].offset;
+		this->old_vertical_trigger[i] = this->settings->scope.voltage[i].trigger;
+	}
 	
 #ifdef OS_DARWIN
 	// Workaround for https://bugreports.qt-project.org/browse/QTBUG-8580
@@ -498,6 +508,204 @@ void DsoWidget::dataAnalyzed() {
 			this->measurementAmplitudeLabel[channel]->setText(Helper::valueToString(this->dataAnalyzer->data(channel)->amplitude, Helper::UNIT_VOLTS, 4));
 			// Frequency string representation (5 significant digits)
 			this->measurementFrequencyLabel[channel]->setText(Helper::valueToString(this->dataAnalyzer->data(channel)->frequency, Helper::UNIT_HERTZ, 5));
+		}
+	}
+}
+
+void DsoWidget::hard_event(int type, int value) {
+	bool visible;
+	double val;
+	int delta;
+	int i;
+
+	switch (type) {
+	case PANEL_SW_R_DEFAULT:
+		for (i = 0; i < settings->scope.voltage.count(); i++)
+			offsetSlider->setValue(i, 0);
+		triggerPositionSlider->setValue(0, 0.5);
+		for (i = 0; i < HANTEK_CHANNELS; i++)
+			triggerLevelSlider->setValue(i, 0);
+		markerSlider->setValue(0, -1);
+		markerSlider->setValue(1, +1);
+
+		break;
+	case PANEL_SW_H_DELAY:
+		if (triggerPositionSlider->value(0) != 0.5) {
+			old_trigger_position = triggerPositionSlider->value(0);
+			triggerPositionSlider->setValue(0, 0.5);
+		} else {
+			triggerPositionSlider->setValue(0, old_trigger_position);
+		}
+		break;
+	case PANEL_SW_C_POSITION:
+		active_marker = (active_marker + 1) % (MARKER_COUNT + 2);
+
+		break;
+	case PANEL_SW_C_MODE:
+		visible = !markerSlider->visible(0);
+
+		markerSlider->setVisible(0, visible);
+		settings->scope.horizontal.marker_visible[0] = visible;
+		markerSlider->setVisible(1, visible);
+		settings->scope.horizontal.marker_visible[1] = visible;
+		mainScope->updateGL();
+
+		break;
+	case PANEL_SW_T_POSITION:
+		i = settings->scope.trigger.source;
+
+		if (settings->scope.trigger.special)
+			return;
+
+		if (triggerLevelSlider->value(i) != 0) {
+			old_vertical_trigger[i] = triggerLevelSlider->value(i);
+			triggerLevelSlider->setValue(i, 0);
+		} else {
+			triggerLevelSlider->setValue(i, old_vertical_trigger[i]);
+		}
+		break;
+	case PANEL_SW_CH1_OFFSET:
+		if (offsetSlider->value(0) != 0) {
+			old_vertical_offset[0] = offsetSlider->value(0);
+			offsetSlider->setValue(0, 0);
+		} else {
+			offsetSlider->setValue(0, old_vertical_offset[0]);
+		}
+		break;
+	case PANEL_SW_CH2_OFFSET:
+		if (offsetSlider->value(1) != 0) {
+			old_vertical_offset[1] = offsetSlider->value(1);
+			offsetSlider->setValue(1, 0);
+		} else {
+			offsetSlider->setValue(1, old_vertical_offset[1]);
+		}
+		break;
+	case PANEL_ENC_CH1_OFFSET:
+		if (zero_lock[0].elapsed() < 200)
+			return;
+
+		delta = last_scroll[0].restart();
+
+		if (delta > 200)
+			delta = 200;
+
+		/* linear acceleration */
+		val = (float)-value * (2 / (float)delta);
+		val = round(val * 100) / 100;
+
+		val += offsetSlider->value(0);
+		/* set zero_lock and snap on zero on crossing */
+		if (offsetSlider->value(0) * val < 0) {
+			val = 0;
+			zero_lock[0].start();
+		}
+
+		offsetSlider->setValue(0, val);
+		break;
+	case PANEL_ENC_CH2_OFFSET:
+		if (zero_lock[1].elapsed() < 200)
+			return;
+
+		delta = last_scroll[1].restart();
+
+		if (delta > 200)
+			delta = 200;
+
+		/* linear acceleration */
+		val = (float)-value * (2 / (float)delta);
+		val = round(val * 100) / 100;
+
+		val += offsetSlider->value(1);
+
+		/* set zero_lock and snap on zero on crossing */
+		if (offsetSlider->value(1) * val < 0) {
+			val = 0;
+			zero_lock[1].start();
+		}
+
+		offsetSlider->setValue(1, val);
+		break;
+	case PANEL_ENC_T_POSITION:
+		i = settings->scope.trigger.source;
+
+		if (settings->scope.trigger.special)
+			return;
+
+		if (zero_lock[2].elapsed() < 200)
+			return;
+
+		delta = settings->scope.trigger.source;
+
+		delta = last_scroll[2].restart();
+
+		if (delta > 200)
+			delta = 200;
+
+		/* linear acceleration */
+		val = (float)-value * (2 / (float)delta);
+		val = round(val * 100) / 100;
+		val *= settings->scope.voltage[i].gain;
+
+		val += triggerLevelSlider->value(i);
+
+		/* set zero_lock and snap on zero on crossing */
+		if (triggerLevelSlider->value(i) * val < 0) {
+			val = 0;
+			zero_lock[2].start();
+		}
+
+		triggerLevelSlider->setValue(i, val);
+		break;
+	case PANEL_ENC_H_DELAY:
+		if (zero_lock[3].elapsed() < 200)
+			return;
+
+		delta = last_scroll[3].restart();
+
+		if (delta > 200)
+			delta = 200;
+
+		/* linear acceleration */
+		val = (float)value * (2 / (float)delta) / 5;
+		val = round(val * 500) / 500;
+
+		val += triggerPositionSlider->value(0);
+
+		/* set zero_lock and snap on zero on crossing */
+		if ((triggerPositionSlider->value(0) - .5) * (val - .5) < 0) {
+			val = 0.5;
+			zero_lock[3].start();
+		}
+
+		triggerPositionSlider->setValue(0, val);
+		break;
+	case PANEL_ENC_C_POSITION:
+		i = active_marker;
+
+		delta = last_scroll[4].restart();
+
+		if (delta > 200)
+			delta = 200;
+
+		/* linear acceleration */
+		val = (float)value * (2 / (float)delta) / 5 * 10;
+		val = round(val * 50) / 50;
+
+		switch (i) {
+		case 0:
+			markerSlider->setValue(0, markerSlider->value(0) + val);
+			break;
+		case 1:
+			markerSlider->setValue(1, markerSlider->value(1) + val);
+			break;
+		case 2:
+			markerSlider->setValue(0, markerSlider->value(0) + val);
+			markerSlider->setValue(1, markerSlider->value(1) + val);
+			break;
+		case 3:
+			markerSlider->setValue(0, markerSlider->value(0) + val);
+			markerSlider->setValue(1, markerSlider->value(1) - val);
+			break;
 		}
 	}
 }

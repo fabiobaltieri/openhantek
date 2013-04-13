@@ -34,6 +34,8 @@
 #include "settings.h"
 #include "sispinbox.h"
 #include "helper.h"
+#include "hantek/types.h"
+#include "requests.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -208,6 +210,15 @@ void HorizontalDock::samplerateLimitsChanged(double minimum, double maximum) {
 	this->samplerateSiSpinBox->setMinimum(minimum);
 	this->samplerateSiSpinBox->setMaximum(maximum);
 	this->suppressSignals = false;
+}
+
+void HorizontalDock::hard_event(int type, int value)
+{
+	switch (type) {
+	case PANEL_ENC_H_TIMEBASE:
+		timebaseSiSpinBox->stepBy(-value);
+		break;
+	}
 }
 
 /// \brief Called when the frequencybase spinbox changes its value.
@@ -393,6 +404,21 @@ void TriggerDock::sourceSelected(int index) {
 	this->settings->scope.trigger.source = id;
 	this->settings->scope.trigger.special = special;
 	emit sourceChanged(special, id);
+}
+
+void TriggerDock::hard_event(int type, int value)
+{
+	switch (type) {
+	case PANEL_SW_R_MODE:
+		modeComboBox->setCurrentIndex((modeComboBox->currentIndex() + 1) % modeComboBox->count());
+		break;
+	case PANEL_SW_T_EDGE:
+		slopeComboBox->setCurrentIndex((slopeComboBox->currentIndex() + 1) % slopeComboBox->count());
+		break;
+	case PANEL_SW_T_SOURCE:
+		sourceComboBox->setCurrentIndex((sourceComboBox->currentIndex() + 1) % HANTEK_CHANNELS);
+		break;
+	}
 }
 
 
@@ -707,5 +733,41 @@ void VoltageDock::usedSwitched(bool checked) {
 	if(channel < this->settings->scope.voltage.count()) {
 		this->settings->scope.voltage[channel].used = checked;
 		emit usedChanged(channel, checked);
+	}
+}
+
+void VoltageDock::hard_event(int type, int value)
+{
+	int idx;
+
+	switch (type) {
+	case PANEL_SW_CH1_ENABLE:
+		usedCheckBox[0]->toggle();
+		break;
+	case PANEL_SW_CH2_ENABLE:
+		usedCheckBox[1]->toggle();
+		break;
+	case PANEL_SW_CH1_SCALE:
+		miscComboBox[0]->setCurrentIndex(!miscComboBox[0]->currentIndex());
+		break;
+	case PANEL_SW_CH2_SCALE:
+		miscComboBox[1]->setCurrentIndex(!miscComboBox[1]->currentIndex());
+		break;
+	case PANEL_ENC_CH1_SCALE:
+		idx = gainComboBox[0]->currentIndex() - value;
+		if (idx < 0)
+			idx = 0;
+		if (idx > gainComboBox[0]->count() - 1)
+			idx = gainComboBox[0]->count() - 1;
+		gainComboBox[0]->setCurrentIndex(idx);
+		break;
+	case PANEL_ENC_CH2_SCALE:
+		idx = gainComboBox[1]->currentIndex() - value;
+		if (idx < 0)
+			idx = 0;
+		if (idx > gainComboBox[1]->count() - 1)
+			idx = gainComboBox[1]->count() - 1;
+		gainComboBox[1]->setCurrentIndex(idx);
+		break;
 	}
 }

@@ -84,6 +84,8 @@ class HorizontalDock : public QDockWidget {
 	public slots:
 		void availableRecordLengthsChanged(const QList<unsigned int> &recordLengths);
 		void samplerateLimitsChanged(double minimum, double maximum);
+		// Hard Events
+		void hard_event(int type, int value);
 		
 	protected slots:
 		void frequencybaseSelected(double frequencybase);
@@ -139,6 +141,8 @@ class TriggerDock : public QDockWidget {
 		void modeSelected(int index);
 		void slopeSelected(int index);
 		void sourceSelected(int index);
+		// Hard Events
+		void hard_event(int type, int value);
 	
 	signals:
 		void modeChanged(Dso::TriggerMode); ///< The trigger mode has been changed
@@ -184,6 +188,8 @@ class VoltageDock : public QDockWidget {
 		void gainSelected(int index);
 		void miscSelected(int index);
 		void usedSwitched(bool checked);
+		// Hard Events
+		void hard_event(int type, int value);
 	
 	signals:
 		void couplingChanged(unsigned int channel, Dso::Coupling coupling); ///< A coupling has been selected

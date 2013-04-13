@@ -139,6 +139,8 @@ class OpenHantekMainWindow : public QMainWindow {
 		// Oscilloscope control
 		void started();
 		void stopped();
+		// Hard Events
+		void hard_event(int type, int value);
 		// Other
 		void config();
 		void about();

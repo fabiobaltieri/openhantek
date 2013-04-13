@@ -45,6 +45,7 @@
 #include "settings.h"
 #include "hantek/control.h"
 #include "hardcontrol.h"
+#include "requests.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -330,6 +331,13 @@ void OpenHantekMainWindow::connectSignals() {
 	
 	connect(this->dsoControl, SIGNAL(availableRecordLengthsChanged(QList<unsigned int>)), this->horizontalDock, SLOT(availableRecordLengthsChanged(QList<unsigned int>)));
 	connect(this->dsoControl, SIGNAL(samplerateLimitsChanged(double, double)), this->horizontalDock, SLOT(samplerateLimitsChanged(double, double)));
+
+	// Hard Events
+	connect(this->hardControl, SIGNAL(new_event(int, int)), this, SLOT(hard_event(int, int)));
+	connect(this->hardControl, SIGNAL(new_event(int, int)), this->dsoWidget, SLOT(hard_event(int, int)));
+	connect(this->hardControl, SIGNAL(new_event(int, int)), this->horizontalDock, SLOT(hard_event(int, int)));
+	connect(this->hardControl, SIGNAL(new_event(int, int)), this->triggerDock, SLOT(hard_event(int, int)));
+	connect(this->hardControl, SIGNAL(new_event(int, int)), this->voltageDock, SLOT(hard_event(int, int)));
 }
 
 /// \brief Initialize the device with the current settings.
@@ -447,6 +455,44 @@ void OpenHantekMainWindow::stopped() {
 	
 	disconnect(this->startStopAction, SIGNAL(triggered()), this->dsoControl, SLOT(stopSampling()));
 	connect(this->startStopAction, SIGNAL(triggered()), this->dsoControl, SLOT(startSampling()));
+}
+
+void OpenHantekMainWindow::hard_event(int type, int value) {
+	int i;
+
+	switch (type) {
+	case PANEL_SW_R_RUN_STOP:
+		startStopAction->activate(QAction::Trigger);
+		break;
+	case PANEL_SW_H_TIMEBASE:
+		zoomAction->activate(QAction::Trigger);
+		break;
+	case PANEL_SW_R_DEFAULT:
+		horizontalDock->setSamplerate(1e6);
+		horizontalDock->setTimebase(1e-3);
+		horizontalDock->setFrequencybase(1e3);
+#if 0
+		horizontalDock->setRecordLength();
+#endif
+		horizontalDock->setFormat(Dso::GRAPHFORMAT_TY);
+		triggerDock->setMode(Dso::TRIGGERMODE_AUTO);
+		triggerDock->setSource(false, 0);
+		triggerDock->setSlope(Dso::SLOPE_POSITIVE);
+
+		for (i = 0; i < HANTEK_CHANNELS; i++) {
+			voltageDock->setCoupling(i, Dso::COUPLING_DC);
+			voltageDock->setGain(i, 1);
+			voltageDock->setUsed(i, 1);
+		}
+		voltageDock->setUsed(HANTEK_CHANNELS, 0);
+		voltageDock->setGain(HANTEK_CHANNELS, 1);
+		voltageDock->setMode(Dso::MATHMODE_1ADD2);
+
+		break;
+	case PANEL_SW_T_MANUAL:
+		this->dsoControl->forceTrigger();
+		break;
+	}
 }
 
 /// \brief Configure the oscilloscope.

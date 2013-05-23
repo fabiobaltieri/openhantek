@@ -881,12 +881,12 @@ namespace Hantek {
 				break;
 			
 			default:
-				this->specification.samplerate.single.base = 50e6;
-				this->specification.samplerate.single.max = 50e6;
+				this->specification.samplerate.single.base = 125e6;
+				this->specification.samplerate.single.max = 125e6;
 				this->specification.samplerate.single.maxDownsampler = 131072;
 				this->specification.samplerate.single.recordLengths << UINT_MAX << 10240 << 32768;
-				this->specification.samplerate.multi.base = 100e6;
-				this->specification.samplerate.multi.max = 100e6;
+				this->specification.samplerate.multi.base = 250e6;
+				this->specification.samplerate.multi.max = 250e6;
 				this->specification.samplerate.multi.maxDownsampler = 131072;
 				this->specification.samplerate.multi.recordLengths << UINT_MAX << 20480 << 65536;
 				this->specification.bufferDividers << 1000 << 1 << 1;

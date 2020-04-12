@@ -16,7 +16,7 @@ TEMPLATE = app
 CONFIG += \
 	warn_on \
 	qt
-QT += opengl
+QT += opengl printsupport
 LIBS += -lfftw3
 
 # Source files
@@ -83,14 +83,7 @@ DISTFILES += \
 	res/images/*.png \
 	res/images/*.icns \
 	res/images/*.svg \
-	translations/*.qm \
-	translations/*.ts \
 	$${DOXYFILES}
-
-# Translations
-TRANSLATIONS += \
-	translations/openhantek_de.ts \
-	translations/openhantek_pt.ts
 
 # Program version
 VERSION = 0.2.0
@@ -134,7 +127,6 @@ unix:!macx {
 	
 	# Installation directories
 	target.path = $${PREFIX}/bin
-	translations.path = $${PREFIX}/share/apps/openhantek/translations
 	contains(LIBUSB_VERSION, 0) {
 		INCLUDEPATH += /usr/include/libusb
 	}
@@ -142,7 +134,6 @@ unix:!macx {
 		INCLUDEPATH += /usr/include/libusb-1.0
 	}
 	DEFINES += \
-		QMAKE_TRANSLATIONS_PATH=\\\"$${translations.path}\\\" \
 		OS_UNIX VERSION=\\\"$${VERSION}\\\"
 }
 macx { 
@@ -151,12 +142,10 @@ macx {
 	
 	# Installation directories
 	target.path = $${PREFIX}/Contents/MacOS
-	translations.path = $${PREFIX}/Contents/Resources/translations
 	INCLUDEPATH += $${INCLUDEPATH_QUOTE}
 	LIBS += -framework IOKit -framework CoreFoundation
 	ICON = res/images/openhantek.icns
 	DEFINES += \
-		QMAKE_TRANSLATIONS_PATH=\\\"Contents/Resources/translations\\\" \
 		OS_DARWIN VERSION=\\\"$${VERSION}\\\"
 }
 win32 { 
@@ -165,28 +154,11 @@ win32 {
 	
 	# Installation directories
 	target.path = $${PREFIX}
-	translations.path = $${PREFIX}/translations
-	INCLUDEPATH += $${INCLUDEPATH_QUOTE}
-	DEFINES += \
-		QMAKE_TRANSLATIONS_PATH=\\\"translations\\\" \
+	INCLUDEPATH += $${INCLUDEPATH_QUOTE} \
 		OS_WINDOWS VERSION=\\\"$${VERSION}\\\"
 }
-translations.files += translations/*.qm
 INSTALLS += \
 	target \
-	translations
-
-# Custom compiler "lrelease" for qm generation
-isEmpty(QMAKE_LRELEASE) {
-	win32: QMAKE_LRELEASE = $$[QT_INSTALL_BINS]\lrelease.exe
-	else: QMAKE_LRELEASE = $$[QT_INSTALL_BINS]/lrelease
-}
-lrelease.input = TRANSLATIONS
-lrelease.output = ${QMAKE_FILE_PATH}/${QMAKE_FILE_BASE}.qm
-lrelease.commands = $$QMAKE_LRELEASE ${QMAKE_FILE_IN} -qm ${QMAKE_FILE_PATH}/${QMAKE_FILE_BASE}.qm
-lrelease.CONFIG += no_link
-QMAKE_EXTRA_COMPILERS += lrelease
-PRE_TARGETDEPS += compiler_lrelease_make_all
 
 # Custom target "cppcheck" for Cppcheck
 INCLUDEPARAMETERS = $$surround($${INCLUDEPATH} $${INCLUDEPATH_QUOTE}, "-I \"", "\"")

@@ -237,11 +237,11 @@ void DataAnalyzer::run() {
 						break;
 					case Dso::WINDOW_BARTLETT:
 						for(unsigned int windowPosition = 0; windowPosition < this->lastRecordLength; ++windowPosition)
-							*(this->window + windowPosition) = 2.0 / windowEnd * (windowEnd / 2 - abs(windowPosition - windowEnd / 2));
+							*(this->window + windowPosition) = 2.0 / windowEnd * (windowEnd / 2 - fabs(windowPosition - windowEnd / 2));
 						break;
 					case Dso::WINDOW_TRIANGULAR:
 						for(unsigned int windowPosition = 0; windowPosition < this->lastRecordLength; ++windowPosition)
-							*(this->window + windowPosition) = 2.0 / this->lastRecordLength * (this->lastRecordLength / 2 - abs(windowPosition - windowEnd / 2));
+							*(this->window + windowPosition) = 2.0 / this->lastRecordLength * (this->lastRecordLength / 2 - fabs(windowPosition - windowEnd / 2));
 						break;
 					case Dso::WINDOW_GAUSS:
 						{

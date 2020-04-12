@@ -75,6 +75,12 @@ DsoWidget::DsoWidget(DsoSettings *settings, DataAnalyzer *dataAnalyzer, QWidget 
 		zero_lock[i].start();
 		last_scroll[i].start();
 	}
+	// Extra timers
+	zero_lock[2].start();
+	zero_lock[3].start();
+	last_scroll[2].start();
+	last_scroll[3].start();
+	last_scroll[4].start();
 	
 #ifdef OS_DARWIN
 	// Workaround for https://bugreports.qt-project.org/browse/QTBUG-8580

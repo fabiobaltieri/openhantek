@@ -72,6 +72,8 @@ DsoWidget::DsoWidget(DsoSettings *settings, DataAnalyzer *dataAnalyzer, QWidget 
 	for (int i = 0; i < HANTEK_CHANNELS; i++) {
 		this->old_vertical_offset[i] = this->settings->scope.voltage[i].offset;
 		this->old_vertical_trigger[i] = this->settings->scope.voltage[i].trigger;
+		zero_lock[i].start();
+		last_scroll[i].start();
 	}
 	
 #ifdef OS_DARWIN
